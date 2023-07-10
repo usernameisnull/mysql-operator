@@ -13,5 +13,5 @@ subjects:
   #  apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
-  name: mysql-operator
+  name: oracle-mysql-operator
   apiGroup: rbac.authorization.k8s.io
