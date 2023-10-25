@@ -8,11 +8,11 @@ image:
 credentials:
   root:
     user: root
-#    password: sakila
+    password: supersecret
     host: "%"
 
 tls:
-  useSelfSigned: false
+  useSelfSigned: true
 #  caSecretName:
 #  serverCertAndPKsecretName:
 #  routerCertAndPKsecretName: # our use router.certAndPKsecretName
@@ -164,14 +164,14 @@ baseServerId: 1000
 #    credentials:
 
 
-#backupProfiles:
-#- name: dump-instance-profile-pvc
-#  dumpInstance:
-#    dumpOptions:
-#      excludeSchemas: ["excludeme"]
-#    storage:
-#      persistentVolumeClaim:
-#        claimName: backup-volume-claim-1
+backupProfiles:
+- name: dump-instance-profile-pvc
+  dumpInstance:
+    dumpOptions:
+      excludeSchemas: ["excludeme"]
+    storage:
+      persistentVolumeClaim:
+        claimName: myexample-pvc # 这个需要预先存在
 #- name: dump-instance-profile-oci
 #  dumpInstance:
 #    dumpOptions:
@@ -200,12 +200,12 @@ baseServerId: 1000
 #        config:
 #        containerName:
 #
-#backupSchedules:
-#- name: schedule-ref
-#  schedule: "*/1 * * * *"
-#  deleteBackupData: false
-#  backupProfileName: dump-instance-profile-oci
-#  enabled: true
+backupSchedules:
+- name: schedule-ref
+  schedule: "*/2 * * * *"
+  deleteBackupData: false
+  backupProfileName: dump-instance-profile-pvc
+  enabled: false
 #- name: schedule-inline
 #  schedule: "*/1 * * * *"
 #  deleteBackupData: false

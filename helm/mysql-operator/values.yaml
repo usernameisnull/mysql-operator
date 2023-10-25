@@ -13,7 +13,7 @@ envs:
     imagesPullPolicy: IfNotPresent
     imagesDefaultRegistry: 
     imagesDefaultRepository:
-    k8sClusterDomain:
+    k8sClusterDomain: cluster.local
 
 # If you would like to debug the Helm output with `helm template`, you need
 # to turn disableLookups on as during `helm template` Helm won't contact the kube API
