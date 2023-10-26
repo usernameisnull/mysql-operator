@@ -18,7 +18,7 @@ tls:
 #  routerCertAndPKsecretName: # our use router.certAndPKsecretName
 
 #serverVersion: 8.0.31
-serverInstances: 3
+serverInstances: 1
 routerInstances: 1 # or use router.instances
 baseServerId: 1000
 
@@ -137,6 +137,18 @@ baseServerId: 1000
 #    requests:
 #      storage:
 
+# 从dump出来的minio备份回复出新集群
+initDB:
+  dump:
+    name: "just-a-name" # 这里就是备份的名字?
+#    storage: # crd这里多了一层storage，其实是没有的，如果你设置storage，不会起作用。
+    s3:
+      prefix: backup/a-cool-one-off-backup1-20231025-080900
+      config: s3-secret
+      bucketName: mabing
+      profile: default
+      endpoint: http://172.30.47.0:30926
+
 #initDB:
 #  dump:
 #    name:
@@ -171,7 +183,7 @@ backupProfiles:
       excludeSchemas: ["excludeme"]
     storage:
       persistentVolumeClaim:
-        claimName: myexample-pvc # 这个需要预先存在
+        claimName: local-path-pvc # 这个需要预先存在
 #- name: dump-instance-profile-oci
 #  dumpInstance:
 #    dumpOptions:
@@ -200,12 +212,15 @@ backupProfiles:
 #        config:
 #        containerName:
 #
+
+# 使用手动pvc来存储
 backupSchedules:
-- name: schedule-ref
+- name: schedule-wth-pvc
   schedule: "*/2 * * * *"
   deleteBackupData: false
   backupProfileName: dump-instance-profile-pvc
   enabled: false
+
 #- name: schedule-inline
 #  schedule: "*/1 * * * *"
 #  deleteBackupData: false
