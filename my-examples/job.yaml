@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: a-cool-one-off-12312312
+  namespace: oracle-mysql
+
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 6
+  selector:
+    matchLabels:
+      job-name: a-cool-one-off-12312312
+  template:
+    metadata:
+      labels:
+        job-name: a-cool-one-off-12312312
+    spec:
+      volumes:
+        - name: shellhome
+          emptyDir: {}
+        - name: s3-config-volume
+          secret:
+            secretName: aws
+            defaultMode: 420
+      containers:
+        - name: operator-backup-job
+          image: container-registry.oracle.com/mysql/community-operator:8.1.0-2.1.0
+          command:
+            - tail
+            - -f
+            - /dev/null
+          env:
+            - name: MYSQLSH_USER_CONFIG_HOME
+              value: /mysqlsh
+            - name: MYSQL_OPERATOR_K8S_CLUSTER_DOMAIN
+              value: cluster.local
+          resources: {}
+          volumeMounts:
+            - name: shellhome
+              mountPath: /mysqlsh
+            - name: s3-config-volume
+              readOnly: true
+              mountPath: /mysqlsh/.aws
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 60
+      dnsPolicy: ClusterFirst
+      serviceAccountName: ic1-sa
+      serviceAccount: ic1-sa
+      securityContext:
+        runAsUser: 27
+        runAsGroup: 27
+        runAsNonRoot: true
+        fsGroup: 27
+      schedulerName: default-scheduler
+  completionMode: NonIndexed
+  suspend: false

@@ -1,0 +1,13 @@
+apiVersion: mysql.oracle.com/v2
+kind: InnoDBCluster
+metadata:
+  name: copycluster
+spec:
+  instances: 1
+  secretName: ic1025-1-cluster-secret # Name of a generic type Secret containing root/default account password
+  tlsUseSelfSigned: true
+  initDB:
+    clone:
+      donorUrl: root@mycluster-0.mycluster-instances.testns.svc.cluster.local:3306
+      secretKeyRef:
+        name: donorpwds
