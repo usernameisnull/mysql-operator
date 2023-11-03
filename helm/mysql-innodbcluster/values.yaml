@@ -18,7 +18,7 @@ tls:
 #  routerCertAndPKsecretName: # our use router.certAndPKsecretName
 
 #serverVersion: 8.0.31
-serverInstances: 1
+serverInstances: 3
 routerInstances: 1 # or use router.instances
 baseServerId: 1000
 
@@ -138,16 +138,31 @@ baseServerId: 1000
 #      storage:
 
 # 从dump出来的minio备份回复出新集群
-initDB:
-  dump:
-    name: "just-a-name" # 这里就是备份的名字?
-#    storage: # crd这里多了一层storage，其实是没有的，如果你设置storage，不会起作用。
-    s3:
-      prefix: backup/a-cool-one-off-backup1-20231025-080900
-      config: s3-secret
-      bucketName: mabing
-      profile: default
-      endpoint: http://172.30.47.0:30926
+#initDB:
+#  dump:
+#    name: "just-a-name" # 这里就是备份的名字?
+##    storage: # crd这里多了一层storage，其实是没有的，如果你设置storage，不会起作用。
+#    s3:
+#      prefix: backup/a-cool-one-off-backup1-20231025-080900
+#      config: s3-secret
+#      bucketName: mabing
+#      profile: default
+#      endpoint: http://172.30.47.0:30926
+
+# 从dump出来的pvc备份回复出新集群,没有走通
+#initDB:
+#  dump:
+#    name: "init-from-pvc" # 这里就是备份的名字?
+#    #    storage: # crd这里多了一层storage，其实是没有的，如果你设置storage，不会起作用。
+#    persistentVolumeClaim:
+#      claimName: local-path-pvc/one-off-backup-to-pvc-20231026-032302
+
+# 从一个运行的ic里clone出一个
+#initDB:
+#  clone:
+#    donorUrl: root@ic1026-04.oracle-mysql.svc.cluster.local:3306
+#    secretKeyRef:
+#      name: ic1026-04-cluster-secret
 
 #initDB:
 #  dump:

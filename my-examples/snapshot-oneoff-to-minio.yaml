@@ -1,0 +1,20 @@
+apiVersion: mysql.oracle.com/v2
+kind: MySQLBackup
+metadata:
+  name: a-cool-one-off-snapshot
+spec:
+  clusterName: ic1026-03
+#  backupProfileName: dump-instance-profile-pvc
+#  backupProfileName: dump-instance-local-pvc
+  backupProfile:
+    name: snapshot-backup
+    snapshot: # dumpInstance
+      storage:
+        s3:
+          bucketName: mabing
+          prefix: backup
+#          config: aws
+#          endpoint: https://s3.us-east-1.amazonaws.com
+          config: s3-secret
+          endpoint: http://172.30.47.0:30926
+
