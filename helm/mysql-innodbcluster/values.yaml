@@ -18,7 +18,7 @@ tls:
 #  routerCertAndPKsecretName: # our use router.certAndPKsecretName
 
 #serverVersion: 8.0.31
-serverInstances: 3
+serverInstances: 1
 routerInstances: 1 # or use router.instances
 baseServerId: 1000
 
@@ -255,3 +255,63 @@ backupSchedules:
 # to turn disableLookups on as during `helm template` Helm won't contact the kube API
 # and all lookups will thus fail
 disableLookups: false
+podSpec:
+  initContainers:
+    - name: fixdatadir
+      image: release-ci.daocloud.io/demo/community-operator:8.1.0-2.1.0
+      resources:
+        requests:
+          memory: "50Mi"
+          cpu: "100m"
+        limits:
+          memory: "500Mi"
+          cpu: "500m"
+    - name: initconf
+      image: release-ci.daocloud.io/demo/community-operator:8.1.0-2.1.0
+      resources:
+        requests:
+          memory: "50Mi"
+          cpu: "100m"
+        limits:
+          memory: "500Mi"
+          cpu: "500m"
+    - name: initmysql
+      image: release-ci.daocloud.io/demo/community-server:8.1.0
+      resources:
+        requests:
+          memory: "50Mi"
+          cpu: "100m"
+        limits:
+          memory: "500Mi"
+          cpu: "500m"
+  containers:
+    - name: sidecar
+      image: release-ci.daocloud.io/demo/community-operator:8.1.0-2.1.0
+      resources:
+        requests:
+          memory: "50Mi"
+          cpu: "100m"
+        limits:
+          memory: "1500Mi"
+          cpu: "1500m"
+    - name: mysql
+      image: release-ci.daocloud.io/demo/community-server:8.1.0
+      resources:
+        requests:
+          memory: "50Mi"
+          cpu: "100m"
+        limits:
+          memory: "1500Mi"
+          cpu: "1500m"
+router:
+  podSpec:
+    containers:
+      - name: router
+        image: release-ci.daocloud.io/demo/community-router:8.1.0
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "1500Mi"
+            cpu: "1500m"
