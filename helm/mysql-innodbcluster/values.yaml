@@ -255,6 +255,7 @@ backupSchedules:
 # to turn disableLookups on as during `helm template` Helm won't contact the kube API
 # and all lookups will thus fail
 disableLookups: false
+
 podSpec:
   initContainers:
     - name: fixdatadir
@@ -315,3 +316,8 @@ router:
           limits:
             memory: "1500Mi"
             cpu: "1500m"
+
+service:
+  type: NodePort
+  labels:
+    app: 1123

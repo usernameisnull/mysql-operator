@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mypwds
+stringData:
+  rootHost: "%"
+  rootPassword: supersecret
+  rootUser: root
+type: Opaque
+
+---
+apiVersion: mysql.oracle.com/v2
+kind: InnoDBCluster
+metadata:
+  name: ic-extra-config
+spec:
+  secretName: mypwds
+  tlsUseSelfSigned: true
+  instances: 1
+# 这里不能这样传： 8.2.0-aarch64，只能是8.2.0
+  version: 8.2.0
+#  version: 8.1.0
+#  edition: community
+  imageRepository: release-ci.daocloud.io/demo
+  podSpec:
+    initContainers:
+      - name: fixdatadir
+#        image: 这里如果设置就必须传完整的地址： release-ci.daocloud.io/demo/community-operator:8.1.0-2.1.0，
+#               哪怕已经设置了imageRepository, 也不能只设置community-operator:8.1.0-2.1.0，如果这样设置，最终的pod就会去拉取
+#               community-operator:8.1.0-2.1.0
+#        image: release-ci.daocloud.io/demo/community-operator:8.1.0-2.1.0
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+      - name: initconf
+#        image: release-ci.daocloud.io/demo/community-operator:8.1.0-2.1.0
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+      - name: initmysql
+#        image: release-ci.daocloud.io/demo/community-server:8.1.0
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+    containers:
+      - name: sidecar
+#        image: release-ci.daocloud.io/demo/community-operator:8.1.0-2.1.0
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "1500Mi"
+            cpu: "1500m"
+      - name: mysql
+#        image: mysql:8.2.0
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "100m"
+          limits:
+            memory: "1500Mi"
+            cpu: "1500m"
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 7
+            preference:
+              matchExpressions:
+                - key: directpv.min.io/region
+                  operator: In
+                  values:
+                    - default
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 60
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: mysql.presslabs.org/cluster
+                    operator: In
+                    values:
+                      - ml1107
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                      - mysql
+              topologyKey: kubernetes.io/hostname
+  router:
+    instances: 1
+    podSpec:
+      containers:
+        - name: router
+#          image: release-ci.daocloud.io/demo/community-router:8.1.0
+          resources:
+            requests:
+              memory: "50Mi"
+              cpu: "100m"
+            limits:
+              memory: "1500Mi"
+              cpu: "1500m"
+#  https://github.com/mysql/mysql-operator/blob/2d7d29b218a13bfbaabd46b12d30f8f8cea85af2/helm/mysql-innodbcluster/templates/deployment_cluster.yaml#L104
+  datadirVolumeClaimTemplate:
+    storageClassName: local-path
+    resources:
+      requests:
+        storage: 500Mi
+#  backupProfiles:
+#    - name: dump-instance-profile-pvc
+#      dumpInstance:
+#        dumpOptions:
+#          excludeSchemas: [ "excludeme" ]
+#        storage:
+#          persistentVolumeClaim:
+#            claimName: local-path-pvc # 这个需要预先存在
+#
+#  backupSchedules:
+#    - name: schedule-wth-pvc
+#      schedule: "*/2 * * * *"
+#      deleteBackupData: false
+#      backupProfileName: dump-instance-profile-pvc
+#      enabled: false
+
+  service:
+    type: NodePort
+    defaultPort: mysql-rw-split
+#    type: LoadBalancer
+#    annotations:
+#      metallb.universe.tf/address-pool: first-pool
+#      metallb.universe.tf/ip-allocated-from-pool: first-pool
+
+#  metrics:
+#    enable: true
+#    # 这里imageRepository是不起作用的: https://forums.mysql.com/read.php?149,710443,710443#msg-710443
+#    image: release-ci.daocloud.io/demo/mysqld-exporter:v0.13.0
+
+  mycnf: |
+    [mysqld]
+    innodb_buffer_pool_size=200M
+    innodb_log_file_size=2G

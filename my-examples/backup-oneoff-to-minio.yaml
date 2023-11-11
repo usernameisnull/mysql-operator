@@ -3,7 +3,7 @@ kind: MySQLBackup
 metadata:
   name: a-cool-one-off-backup1
 spec:
-  clusterName: ic1025-1
+  clusterName: ic-loadbalancer
 #  backupProfileName: dump-instance-profile-pvc
 #  backupProfileName: dump-instance-local-pvc
   backupProfile:
@@ -14,7 +14,7 @@ spec:
       storage:
         s3:
           bucketName: mabing
-          prefix: backup
+          prefix: mgr-backup
 #          config: aws
 #          endpoint: https://s3.us-east-1.amazonaws.com
           config: s3-secret
