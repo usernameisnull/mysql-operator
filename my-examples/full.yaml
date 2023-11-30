@@ -12,13 +12,13 @@ type: Opaque
 apiVersion: mysql.oracle.com/v2
 kind: InnoDBCluster
 metadata:
-  name: ic-extra-config
+  name: ic1124-manual
 spec:
   secretName: mypwds
   tlsUseSelfSigned: true
   instances: 1
 # 这里不能这样传： 8.2.0-aarch64，只能是8.2.0
-  version: 8.2.0
+  version: 8.0.35
 #  version: 8.1.0
 #  edition: community
   imageRepository: release-ci.daocloud.io/demo
@@ -73,6 +73,10 @@ spec:
           limits:
             memory: "1500Mi"
             cpu: "1500m"
+      - name: metrics
+        # 这样才能搜集到transaction的延迟： https://github.com/prometheus/mysqld_exporter#collector-flags
+        args:
+          - '--collect.perf_schema.replication_group_member_stats'
     affinity:
       nodeAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
@@ -117,34 +121,63 @@ spec:
     resources:
       requests:
         storage: 500Mi
-#  backupProfiles:
-#    - name: dump-instance-profile-pvc
+  backupProfiles:
+#    - name: pvc-profile
 #      dumpInstance:
 #        dumpOptions:
 #          excludeSchemas: [ "excludeme" ]
 #        storage:
 #          persistentVolumeClaim:
 #            claimName: local-path-pvc # 这个需要预先存在
-#
-#  backupSchedules:
-#    - name: schedule-wth-pvc
+    - name: minio-profile
+      dumpInstance:
+        dumpOptions:
+          excludeSchemas: [ "excludeme" ]
+        storage:
+          s3:
+            bucketName: mabing
+            prefix: mgr-backup
+            profile:
+            config: s3-secret
+            endpoint: http://172.30.47.0:30926
+  backupSchedules:
+#    - name: schedule-with-pvc
 #      schedule: "*/2 * * * *"
-#      deleteBackupData: false
-#      backupProfileName: dump-instance-profile-pvc
+#      deleteBackupData: false # ||| 这个选项是什么作用？
+#      backupProfileName: pvc-profile
 #      enabled: false
 
-  service:
-    type: NodePort
-    defaultPort: mysql-rw-split
-#    type: LoadBalancer
-#    annotations:
-#      metallb.universe.tf/address-pool: first-pool
-#      metallb.universe.tf/ip-allocated-from-pool: first-pool
+    - name: schedule-with-minio
+      schedule: "*/2 * * * *"
+      deleteBackupData: false
+      enabled: false
+      backupProfile:
+        dumpInstance:
+          dumpOptions:
+            excludeSchemas: [ "excludeme" ]
+          storage:
+            s3:
+              bucketName: mabing
+              prefix: mgr-backup
+              profile:
+              config: s3-secret
+              endpoint: http://172.30.47.0:30926
 
-#  metrics:
-#    enable: true
-#    # 这里imageRepository是不起作用的: https://forums.mysql.com/read.php?149,710443,710443#msg-710443
-#    image: release-ci.daocloud.io/demo/mysqld-exporter:v0.13.0
+  service:
+#    type: NodePort
+#    defaultPort: mysql-rw-split
+    type: LoadBalancer
+    annotations:
+      metallb.universe.tf/address-pool: first-pool
+      metallb.universe.tf/ip-allocated-from-pool: first-pool
+
+  metrics:
+    enable: true
+    # 这里imageRepository是不起作用的: https://forums.mysql.com/read.php?149,710443,710443#msg-710443
+    image: release-ci.daocloud.io/demo/mysqld-exporter:v0.13.0
+    monitor: true
+    monitorSpec:
+
 
   mycnf: |
     [mysqld]

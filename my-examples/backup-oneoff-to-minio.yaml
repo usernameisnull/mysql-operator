@@ -1,9 +1,10 @@
 apiVersion: mysql.oracle.com/v2
 kind: MySQLBackup
 metadata:
-  name: a-cool-one-off-backup1
+  name: a-cool-one-off-mgr1128
 spec:
-  clusterName: ic-loadbalancer
+  clusterName: mgr1128
+#  backupProfileName: dfadfadfad-profile
 #  backupProfileName: dump-instance-profile-pvc
 #  backupProfileName: dump-instance-local-pvc
   backupProfile:
@@ -15,8 +16,12 @@ spec:
         s3:
           bucketName: mabing
           prefix: mgr-backup
-#          config: aws
-#          endpoint: https://s3.us-east-1.amazonaws.com
           config: s3-secret
-          endpoint: http://172.30.47.0:30926
+          endpoint: http://10.6.178.185:81
+#         config: aws
+#         endpoint: https://s3.us-east-1.amazonaws.com
+  deleteBackupData: true
 
+#k get svc minio-svc
+#NAME        TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)        AGE
+#minio-svc   LoadBalancer   10.99.0.188   10.6.178.185   80:31807/TCP   27m

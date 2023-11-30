@@ -1,0 +1,32 @@
+# k get servicemonitor -oyaml
+apiVersion: v1
+items:
+- apiVersion: monitoring.coreos.com/v1
+  kind: ServiceMonitor
+  metadata:
+    creationTimestamp: "2023-11-19T10:33:01Z"
+    generation: 1
+    name: ic1119
+    namespace: test-audit
+    ownerReferences:
+    - apiVersion: mysql.oracle.com/v2
+      blockOwnerDeletion: true
+      controller: true
+      kind: InnoDBCluster
+      name: ic1119
+      uid: 4f815911-5ecc-490d-805a-80fe5aa721e8
+    resourceVersion: "3003773"
+    uid: e0278f61-7687-492c-9fce-6136a8c61e4d
+  spec:
+    endpoints:
+    - path: /metrics
+      port: metrics
+    selector:
+      matchLabels:
+        mysql.oracle.com/cluster: ic1119
+        tier: mysql
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+
