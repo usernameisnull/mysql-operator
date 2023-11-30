@@ -12,13 +12,13 @@ type: Opaque
 apiVersion: mysql.oracle.com/v2
 kind: InnoDBCluster
 metadata:
-  name: ic1124-manual
+  name: mgr0202
 spec:
   secretName: mypwds
   tlsUseSelfSigned: true
   instances: 1
 # 这里不能这样传： 8.2.0-aarch64，只能是8.2.0
-  version: 8.0.35
+  version: 8.0.31
 #  version: 8.1.0
 #  edition: community
   imageRepository: release-ci.daocloud.io/demo
@@ -71,12 +71,12 @@ spec:
             memory: "50Mi"
             cpu: "100m"
           limits:
-            memory: "1500Mi"
-            cpu: "1500m"
-      - name: metrics
-        # 这样才能搜集到transaction的延迟： https://github.com/prometheus/mysqld_exporter#collector-flags
-        args:
-          - '--collect.perf_schema.replication_group_member_stats'
+            memory: "2000Mi"
+            cpu: "2000m"
+#      - name: metrics
+#        # 这样才能搜集到transaction的延迟： https://github.com/prometheus/mysqld_exporter#collector-flags
+#        args:
+#          - '--collect.perf_schema.replication_group_member_stats'
     affinity:
       nodeAffinity:
         preferredDuringSchedulingIgnoredDuringExecution:
@@ -139,7 +139,7 @@ spec:
             prefix: mgr-backup
             profile:
             config: s3-secret
-            endpoint: http://172.30.47.0:30926
+            endpoint: http://10.6.178.185:80
   backupSchedules:
 #    - name: schedule-with-pvc
 #      schedule: "*/2 * * * *"
@@ -161,22 +161,22 @@ spec:
               prefix: mgr-backup
               profile:
               config: s3-secret
-              endpoint: http://172.30.47.0:30926
+              endpoint: http://10.6.178.185:80
 
   service:
-#    type: NodePort
-#    defaultPort: mysql-rw-split
-    type: LoadBalancer
-    annotations:
-      metallb.universe.tf/address-pool: first-pool
-      metallb.universe.tf/ip-allocated-from-pool: first-pool
+    type: NodePort
+    defaultPort: mysql-rw-split
+#    type: LoadBalancer
+#    annotations:
+#      metallb.universe.tf/address-pool: first-pool
+#      metallb.universe.tf/ip-allocated-from-pool: first-pool
 
-  metrics:
-    enable: true
-    # 这里imageRepository是不起作用的: https://forums.mysql.com/read.php?149,710443,710443#msg-710443
-    image: release-ci.daocloud.io/demo/mysqld-exporter:v0.13.0
-    monitor: true
-    monitorSpec:
+#  metrics:
+#    enable: true
+#    # 这里imageRepository是不起作用的: https://forums.mysql.com/read.php?149,710443,710443#msg-710443
+#    image: release-ci.daocloud.io/demo/mysqld-exporter:v0.13.0
+#    monitor: true
+#    monitorSpec:
 
 
   mycnf: |
